@@ -323,7 +323,6 @@ export function VisitDialog({
         updateFieldRef.current("time", initialTime);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialDate, initialTime, isEditMode]);
 
   /**
@@ -480,7 +479,7 @@ export function VisitDialog({
         // MODO CRIAÇÃO
         // ==========================================
         
-        let clientId = selectedClientId;
+        const clientId = selectedClientId;
         let newClientData = null;
 
         // Se não selecionou cliente existente E preencheu email ou telefone

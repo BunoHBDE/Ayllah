@@ -404,7 +404,7 @@ function CalendarRange({
     
     // Calcular se está no range (incluindo hover preview)
     let isInRange = false;
-    let previewEnd = selected?.to || (selectionState === "selecting" ? hoveredDate : null);
+    const previewEnd = selected?.to || (selectionState === "selecting" ? hoveredDate : null);
     
     if (selected?.from && previewEnd) {
       isInRange = isDateBetween(date, selected.from, previewEnd) || isRangeStart || isRangeEnd;

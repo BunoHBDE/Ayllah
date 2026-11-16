@@ -188,7 +188,7 @@ export function PaymentSettingsCard() {
     }
 
     // Validações específicas por tipo
-    let dadosAdicionais: any = {};
+    const dadosAdicionais: any = {};
     
     if (tipoParcelamento === 'apos_evento') {
       const meses = parseInt(mesesAposEvento);

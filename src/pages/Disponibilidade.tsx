@@ -52,7 +52,7 @@ import { useAvailableDates } from "@/hooks/useAvailableDates";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { DayWithTooltip } from "@/components/disponibilidade/DayWithTooltip";
-import { DayContentProps } from "react-day-picker";
+import type { DayContentProps } from "@/components/ui/calendar";
 import { SubscriptionGate } from "@/components/subscription";
 
 type ViewMode = "mensal" | "estacao" | "anual";

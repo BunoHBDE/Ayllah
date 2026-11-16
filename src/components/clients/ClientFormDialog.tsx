@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Client } from "@/hooks/useClients";
+import type { Client } from "@/hooks/useClientsOptimized";
 import { formatPhone, isValidPhone } from "@/lib/masks";
 
 export interface ClientFormData {
@@ -136,17 +136,19 @@ export function ClientFormDialog({
         return;
       }
 
-      setFormData({
-        ...formData,
+      // Atualização funcional: a consulta é assíncrona, e o que foi digitado
+      // nos outros campos enquanto ela corria não pode ser sobrescrito.
+      setFormData((atual) => ({
+        ...atual,
         address: {
-          ...formData.address,
+          ...atual.address,
           cep: formatCEP(cleanCep),
           street: data.logradouro || "",
           neighborhood: data.bairro || "",
           city: data.localidade || "",
           state: data.uf || "",
         },
-      });
+      }));
 
       toast({
         title: "Endereço encontrado!",
@@ -163,7 +165,7 @@ export function ClientFormDialog({
     }
   };
 
-  const handleSubmit = (andSearch: boolean = false) => {
+  const handleSubmit = () => {
     if (!formData.name) {
       toast({
         title: "Campos obrigatórios",
@@ -194,17 +196,11 @@ export function ClientFormDialog({
       onClientCreated(newClient);
     }
 
+    // Quem confirma (ou acusa o erro) é quem grava: avisar "cadastrado" aqui
+    // mentia quando o banco recusava o cliente e duplicava o aviso quando dava
+    // certo.
     setFormData(initialFormData);
     onOpenChange(false);
-
-    if (!isEditing) {
-      toast({
-        title: "Cliente cadastrado!",
-        description: andSearch
-          ? `${formData.name} foi adicionado. Agora você pode buscá-lo.`
-          : `${formData.name} foi adicionado com sucesso.`,
-      });
-    }
   };
 
   const resetAndClose = () => {
@@ -415,11 +411,11 @@ export function ClientFormDialog({
             Cancelar
           </Button>
           {showSaveAndSearch && !isEditing && (
-            <Button variant="outline" onClick={() => handleSubmit(true)}>
+            <Button variant="outline" onClick={() => handleSubmit()}>
               Salvar e Buscar
             </Button>
           )}
-          <Button variant="gold" onClick={() => handleSubmit(false)}>
+          <Button variant="gold" onClick={() => handleSubmit()}>
             {isEditing ? "Salvar Alterações" : "Salvar Cliente"}
           </Button>
         </div>

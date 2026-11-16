@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -201,9 +201,9 @@ export default function Auth() {
               </Form>
               <p className="text-center text-sm text-muted-foreground mt-6">
                 Não tem uma conta?{' '}
-                <a href="/cadastro" className="text-accent hover:underline font-medium">
+                <Link to="/cadastro" className="text-accent hover:underline font-medium">
                   Criar conta grátis
-                </a>
+                </Link>
               </p>
             </CardContent>
           </>

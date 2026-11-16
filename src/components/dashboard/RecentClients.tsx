@@ -1,16 +1,15 @@
 import { Users, ArrowRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useClients } from "@/hooks/useClients";
+import { useClientsOptimized as useClients } from "@/hooks/useClientsOptimized";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 
 export function RecentClients() {
   const { clients, loading: isLoading } = useClients();
 
-  // Get 5 most recent clients
-  const recentClients = clients
-    ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5) || [];
+  // Os 5 mais recentes. A lista já chega do banco ordenada por created_at
+  // (mais novo primeiro); ordenar aqui com .sort() alterava o array do cache.
+  const recentClients = clients.slice(0, 5);
 
   if (isLoading) {
     return (

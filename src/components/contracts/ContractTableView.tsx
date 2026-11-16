@@ -18,6 +18,7 @@ import { ScrollText, User, Eye, ChevronRight, Calendar, Users, DollarSign } from
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { parseLocalDate } from "@/lib/dates";
 
 import type { Contract, ContractStatus } from "@/types/contract.types";
 import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_STYLES, CONTRACT_STATUS_OPTIONS } from "@/constants/contracts";
@@ -46,7 +47,7 @@ const formatCurrency = (value: number): string => {
 const formatDate = (dateString?: string): string => {
   if (!dateString) return "Não definida";
   try {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+    return format(parseLocalDate(dateString), "dd/MM/yyyy", { locale: ptBR });
   } catch {
     return dateString;
   }

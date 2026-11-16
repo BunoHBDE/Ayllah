@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/", disabled: false },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", disabled: false },
   { icon: Kanban, label: "CRM", path: "/crm", disabled: false },
   { icon: CalendarCheck, label: "Disponibilidade", path: "/disponibilidade", disabled: false },
   { icon: FileText, label: "Orçamentos", path: "/orcamentos", disabled: false },

@@ -91,9 +91,8 @@ export default function Contratos() {
       .sort((a, b) => {
         switch (sortBy) {
           case "date":
-            const dateA = a.data_evento ? new Date(a.data_evento).getTime() : 0;
-            const dateB = b.data_evento ? new Date(b.data_evento).getTime() : 0;
-            return dateA - dateB;
+            // "YYYY-MM-DD" ordena certo como texto; sem data vai para o início.
+            return (a.data_evento ?? "").localeCompare(b.data_evento ?? "");
           case "status":
             return a.status.localeCompare(b.status);
           case "name":

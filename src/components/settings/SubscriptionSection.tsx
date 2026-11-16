@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Crown, Check, Loader2, Clock, AlertCircle, ExternalLink, Gift, CreditCard, Sparkles } from "lucide-react";
 import { PLAN_FEATURES } from "@/constants/settings";
-import { useSubscription, SUBSCRIPTION_PRICES } from "@/hooks/useSubscription";
+import { SUBSCRIPTION_PRICES } from "@/hooks/useSubscription";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,10 @@ export function SubscriptionSection() {
     startTrial,
     createCheckout,
     openCustomerPortal,
-  } = useSubscription();
+    // O estado vem do contexto, e não de uma segunda instância do hook: é o
+    // mesmo que o SubscriptionGate lê, então iniciar o trial ou voltar do
+    // checkout libera o resto do app na hora.
+  } = useSubscriptionContext();
 
   // Handle success/cancel URL params
   useEffect(() => {

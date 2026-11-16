@@ -19,6 +19,7 @@ import {
 } from 'react';
 import { AuthError, User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { queryClient } from '@/lib/queryClient';
 
 interface Profile {
   id: string;
@@ -64,6 +65,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // getSession inicial, e nenhum desses casos precisa refazer as buscas.
   const requestedUserIdRef = useRef<string | null>(null);
 
+  // Último usuário visto. As chaves do cache (clientes, orçamentos, leads...)
+  // não levam o id do usuário, então trocar de conta no mesmo navegador
+  // mostraria os dados da conta anterior até o cache expirar. Ao sair ou
+  // trocar de usuário, o cache é descartado.
+  const cachedUserIdRef = useRef<string | null>(null);
+
+  const syncCacheWithUser = useCallback((userId: string | null) => {
+    const anterior = cachedUserIdRef.current;
+    if (anterior !== null && anterior !== userId) {
+      queryClient.clear();
+    }
+    cachedUserIdRef.current = userId;
+  }, []);
+
   const fetchUserData = useCallback(async (userId: string, force = false) => {
     // Busca já concluída ou em andamento: quem a iniciou encerra o loading
     if (!force && requestedUserIdRef.current === userId) {
@@ -98,7 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listener primeiro, para não perder eventos disparados durante o getSession
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      syncCacheWithUser(nextSession?.user?.id ?? null);
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
 
@@ -117,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      syncCacheWithUser(currentSession?.user?.id ?? null);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
@@ -128,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUserData]);
+  }, [fetchUserData, syncCacheWithUser]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });

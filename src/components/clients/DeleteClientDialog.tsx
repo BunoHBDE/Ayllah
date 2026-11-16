@@ -8,7 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Client } from "@/hooks/useClients";
+import type { Client } from "@/hooks/useClientsOptimized";
 
 interface DeleteClientDialogProps {
   open: boolean;

@@ -5,6 +5,7 @@
 import type { DadosCliente, DadosEvento, DadosPagamento, DadosEmpresa } from '@/types/contract.types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/dates';
 
 export interface PlaceholderCategory {
   label: string;
@@ -82,7 +83,9 @@ const formatCurrency = (value: number): string => {
 const formatDate = (dateString?: string): string => {
   if (!dateString) return 'Data não definida';
   try {
-    const date = new Date(dateString);
+    // Datas do banco vêm como "YYYY-MM-DD": lidas como UTC, sairiam um dia
+    // antes no contrato.
+    const date = parseLocalDate(dateString);
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   } catch {
     return dateString;

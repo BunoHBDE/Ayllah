@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import { invalidateQueries } from "@/lib/queryClient";
 
 interface AvailableDate {
   id: string;
@@ -54,6 +55,8 @@ export function useAvailableDates() {
 
       if (error) throw error;
       await fetchAvailableDates();
+      // O calendário dos orçamentos lê as datas liberadas de um cache próprio.
+      invalidateQueries.availableDates();
       return true;
     } catch (error: any) {
       console.error("Error adding available date:", error);
@@ -77,6 +80,8 @@ export function useAvailableDates() {
 
       if (error) throw error;
       await fetchAvailableDates();
+      // O calendário dos orçamentos lê as datas liberadas de um cache próprio.
+      invalidateQueries.availableDates();
       return true;
     } catch (error) {
       console.error("Error updating available date:", error);
@@ -96,6 +101,8 @@ export function useAvailableDates() {
 
       if (error) throw error;
       await fetchAvailableDates();
+      // O calendário dos orçamentos lê as datas liberadas de um cache próprio.
+      invalidateQueries.availableDates();
       return true;
     } catch (error) {
       console.error("Error removing available date:", error);

@@ -18,10 +18,11 @@ import {
   ArrowRight,
   User,
 } from 'lucide-react';
-import { useQuotes } from '@/hooks/useQuotes';
+import { useQuotesOptimized as useQuotes } from '@/hooks/useQuotesOptimized';
 import { useContracts } from '@/hooks/useContracts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/dates';
 
 interface QuotesPendingContractDialogProps {
   open: boolean;
@@ -58,7 +59,7 @@ export function QuotesPendingContractDialog({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Data não definida';
     try {
-      return format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      return format(parseLocalDate(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     } catch {
       return dateString;
     }

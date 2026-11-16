@@ -12,6 +12,7 @@ import {
 import { useVisitsOptimized as useVisits } from "@/hooks/useVisitsOptimized";
 import { useClientsOptimized as useClients } from "@/hooks/useClientsOptimized";
 import { useQuotesOptimized as useQuotes } from "@/hooks/useQuotesOptimized";
+import { parseLocalDate } from "@/lib/dates";
 
 const Index = () => {
   const { visits, loading: visitsLoading } = useVisits();
@@ -26,7 +27,7 @@ const Index = () => {
   const currentYear = now.getFullYear();
   
   const visitsThisMonth = visits?.filter(visit => {
-    const visitDate = new Date(visit.visit_date);
+    const visitDate = parseLocalDate(visit.visit_date);
     return visitDate.getMonth() === currentMonth && visitDate.getFullYear() === currentYear;
   }).length || 0;
 

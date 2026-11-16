@@ -15,6 +15,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { toLocalISODate } from "@/lib/dates";
 
 export interface Parcela {
   numero: number;
@@ -87,11 +88,6 @@ export function PaymentTermsForm({
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString + "T12:00:00").toLocaleDateString("pt-BR");
-  };
-
   // Sync percentage input when valorTotal changes
   useEffect(() => {
     setValorSinalManual(null);
@@ -137,6 +133,10 @@ export function PaymentTermsForm({
 
   // Calculate installments
   const calcularParcelas = () => {
+    // As parcelas vão ser refeitas: um erro de data marcado numa parcela antiga
+    // não vale mais, e se ficasse travaria o botão de finalizar para sempre.
+    setErrosDataParcela(new Set());
+
     if (numeroParcelas <= 0 || saldoRestante <= 0) {
       setParcelas([]);
       setParcelaInputs([]);
@@ -155,7 +155,7 @@ export function PaymentTermsForm({
       novasParcelas.push({
         numero: i + 1,
         valor: valorParcela,
-        dataVencimento: dataParcela.toISOString().split("T")[0],
+        dataVencimento: toLocalISODate(dataParcela),
       });
     }
 
@@ -313,7 +313,7 @@ export function PaymentTermsForm({
         if (isNaN(eventDate.getTime())) return null;
         const limitDate = new Date(eventDate);
         limitDate.setDate(limitDate.getDate() - 30);
-        return limitDate.toISOString().split("T")[0];
+        return toLocalISODate(limitDate);
       })()
     : null;
 

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { ContractEditor } from "@/components/contracts/ContractEditor";
 import {
   Select,
@@ -38,7 +37,8 @@ import { toast } from "sonner";
 
 // Hooks
 import { useAuth } from "@/hooks/useAuth";
-import { useQuotes, type Quote } from "@/hooks/useQuotes";
+import { useQuotesOptimized as useQuotes, type Quote } from "@/hooks/useQuotesOptimized";
+import { usePackageSettings } from "@/hooks/usePackageSettings";
 import { useContracts } from "@/hooks/useContracts";
 import { useContractTemplates } from "@/hooks/useContractTemplates";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
@@ -52,12 +52,26 @@ import type {
   DadosEmpresa,
 } from "@/types/contract.types";
 import type { ExtraItem } from "@/components/quotes/ExtrasForm";
+import type { QuoteComposicao } from "@/types/quote.types";
 
 // Lib
 import { replacePlaceholders, DEFAULT_CONTRACT_TEMPLATE, PLACEHOLDER_CATEGORIES } from "@/lib/contractPlaceholders";
 import { formatPhone } from "@/lib/masks";
+import { parseLocalDate } from "@/lib/dates";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Os campos legados `pacote` e `menu_buffet` do orçamento hoje guardam o ID do
+ * item, não o nome. Só orçamentos antigos têm texto de verdade ali — e é só
+ * esse texto que pode ir para o contrato.
+ */
+function textoLegado(valor: string | null | undefined): string | undefined {
+  if (!valor || UUID.test(valor)) return undefined;
+  return valor;
+}
 
 export default function NovoContrato() {
   const navigate = useNavigate();
@@ -69,6 +83,7 @@ export default function NovoContrato() {
   const { createContract } = useContracts();
   const { templates, getDefaultContent } = useContractTemplates();
   const { profileData } = useProfileSettings();
+  const { packages } = usePackageSettings();
 
   // States
   const [loading, setLoading] = useState(true);
@@ -114,7 +129,12 @@ export default function NovoContrato() {
       loadedQuoteRef.current = quoteId;
 
       setLoading(true);
-      const quoteData = await getQuoteById(quoteId);
+      let quoteData: Quote | null = null;
+      try {
+        quoteData = await getQuoteById(quoteId);
+      } catch (error) {
+        console.error("Erro ao carregar orçamento:", error);
+      }
       
       if (!quoteData) {
         toast.error("Orçamento não encontrado");
@@ -151,10 +171,16 @@ export default function NovoContrato() {
       }
 
       // Pre-fill event data
-      const extras = (quoteData.extras_json as ExtraItem[] || []).map(e => ({
+      // Extra "por convidado" guarda o valor unitário: no contrato vai o valor
+      // cobrado de fato.
+      const extras = ((quoteData.extras_json as unknown as ExtraItem[] | null) ?? []).map(e => ({
         descricao: e.descricao || "",
-        valor: e.valor || 0,
+        valor: (e.valor || 0) * (e.porConvidado ? quoteData.n_convidados : 1),
       }));
+
+      // Os nomes dos itens vêm da composição de preço salva com o orçamento.
+      const itens = (quoteData.composicao_preco as QuoteComposicao | null)?.itens ?? [];
+      const servicos = itens.filter(i => i.tipo === "servico").map(i => i.nome);
 
       setDadosEvento({
         data_evento: quoteData.data_evento || undefined,
@@ -162,13 +188,17 @@ export default function NovoContrato() {
         ano_evento: quoteData.ano_evento || undefined,
         tipo_evento: quoteData.tipo_evento || undefined,
         n_convidados: quoteData.n_convidados,
-        buffet_nome: quoteData.menu_buffet || undefined,
-        pacote_nome: quoteData.pacote,
+        espaco_nome: itens.find(i => i.tipo === "espaco")?.nome,
+        buffet_nome: itens.find(i => i.tipo === "buffet")?.nome ?? textoLegado(quoteData.menu_buffet),
+        servicos: servicos.length > 0 ? servicos : undefined,
+        // Quando o orçamento aponta para um pacote cadastrado, o nome é
+        // preenchido mais abaixo, assim que os pacotes carregam.
+        pacote_nome: textoLegado(quoteData.pacote),
         extras,
       });
 
       // Pre-fill payment data
-      const parcelas = (quoteData.parcelas_json as Array<{ numero: number; valor: number; vencimento: string }> || []);
+      const parcelas = (quoteData.parcelas_json as unknown as Array<{ numero: number; valor: number; dataVencimento?: string; vencimento?: string }> | null) ?? [];
       setDadosPagamento({
         valor_total: Number(quoteData.valor_total),
         percentual_sinal: quoteData.percentual_sinal,
@@ -184,6 +214,18 @@ export default function NovoContrato() {
     loadQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quoteId]);
+
+  // Nome do pacote: o orçamento guarda só o id.
+  useEffect(() => {
+    if (!quote) return;
+    const pacoteId = quote.pacote_id || (UUID.test(quote.pacote) ? quote.pacote : null);
+    if (!pacoteId) return;
+
+    const nome = packages.find(p => p.id === pacoteId)?.nome;
+    if (!nome) return;
+
+    setDadosEvento(prev => (prev.pacote_nome ? prev : { ...prev, pacote_nome: nome }));
+  }, [quote, packages]);
 
   // Pre-fill company data from profile
   useEffect(() => {
@@ -219,6 +261,12 @@ export default function NovoContrato() {
 
   // Update contract content when template changes
   useEffect(() => {
+    // "default" é o item "Modelo Padrão" do seletor: o modelo do sistema.
+    if (selectedTemplateId === "default") {
+      setContractContent(DEFAULT_CONTRACT_TEMPLATE);
+      return;
+    }
+
     const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
     if (selectedTemplate) {
       setContractContent(selectedTemplate.conteudo);
@@ -248,7 +296,7 @@ export default function NovoContrato() {
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "Não definida";
     try {
-      return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+      return format(parseLocalDate(dateString), "dd/MM/yyyy", { locale: ptBR });
     } catch {
       return dateString;
     }

@@ -18,6 +18,15 @@ interface WelcomeEmailRequest {
   trialEndsAt: string;
 }
 
+/** O nome vem do cadastro e vai para dentro do HTML do e-mail. */
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,6 +34,19 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Função interna: só a start-trial chama, com a service role. Sem esta
+    // checagem qualquer pessoa conseguia disparar e-mails de contato@ayllah.com
+    // para o endereço que quisesse.
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const authHeader = req.headers.get("Authorization");
+    if (!serviceRoleKey || authHeader !== `Bearer ${serviceRoleKey}`) {
+      logStep("Unauthorized call rejected");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) {
@@ -41,7 +63,8 @@ serve(async (req) => {
     }
     logStep("Request parsed", { email, name, trialDays });
 
-    const firstName = name ? name.split(' ')[0] : 'Usuário';
+    const firstName = escapeHtml(name ? name.split(' ')[0] : 'Usuário');
+    const trialDaysSafe = Number(trialDays) || 14;
     const trialEndDate = new Date(trialEndsAt).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',
@@ -78,7 +101,7 @@ serve(async (req) => {
               </p>
               
               <p style="font-size: 16px; color: #4b5563; line-height: 1.6; margin: 0 0 24px 0;">
-                Estamos muito felizes em ter você conosco! Seu trial gratuito de <strong>${trialDays} dias</strong> 
+                Estamos muito felizes em ter você conosco! Seu trial gratuito de <strong>${trialDaysSafe} dias</strong> 
                 foi ativado com sucesso e você já pode aproveitar todas as funcionalidades do Plano Pro.
               </p>
 

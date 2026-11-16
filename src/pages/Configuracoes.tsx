@@ -33,17 +33,23 @@ import {
   PlaceholderSection,
 } from "@/components/settings";
 
+const SECOES_VALIDAS: MainSection[] = MAIN_SECTIONS.map((secao) => secao.id);
+
 export default function Configuracoes() {
   // ==========================================
   // ESTADO DA NAVEGAÇÃO
   // ==========================================
   const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') as MainSection | null;
-  const [activeSection, setActiveSection] = useState<MainSection>(tabParam || "perfil");
+  // `section` é como as funções de checkout e do portal do Stripe devolvem o
+  // usuário; `tab` é como o próprio app navega. Os dois valem.
+  const tabParam = (searchParams.get('tab') ?? searchParams.get('section')) as MainSection | null;
+  const [activeSection, setActiveSection] = useState<MainSection>(
+    tabParam && SECOES_VALIDAS.includes(tabParam) ? tabParam : "perfil"
+  );
 
   // Atualiza a seção ativa quando o parâmetro da URL mudar
   useEffect(() => {
-    if (tabParam && ["perfil", "empresa", "assinatura", "orcamentos", "contratos", "visitas", "disponibilidade"].includes(tabParam)) {
+    if (tabParam && SECOES_VALIDAS.includes(tabParam)) {
       setActiveSection(tabParam);
     }
   }, [tabParam]);

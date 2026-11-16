@@ -73,6 +73,7 @@ import { DatePickerField } from "@/components/ui/DatePickerField";
 import { remapSelectionsToYear } from "@/lib/quoteYearMigration";
 import { useDateAvailability } from "@/hooks/useDateAvailability";
 import { cn } from "@/lib/utils";
+import { toLocalISODate } from "@/lib/dates";
 import { useToast } from "@/hooks/use-toast";
 import { ClientFormDialog, ClientFormData } from "@/components/clients/ClientFormDialog";
 import { useClientsOptimized as useClients, type Client, type ClientInsert } from "@/hooks/useClientsOptimized";
@@ -299,7 +300,7 @@ export default function NovoOrcamento() {
   useEffect(() => {
     const defaultValidity = new Date();
     defaultValidity.setDate(defaultValidity.getDate() + 30);
-    setValidadeOrcamento(defaultValidity.toISOString().split("T")[0]);
+    setValidadeOrcamento(toLocalISODate(defaultValidity));
   }, []);
 
   // Migrar as seleções quando o ano do evento muda. Os itens são cadastrados por

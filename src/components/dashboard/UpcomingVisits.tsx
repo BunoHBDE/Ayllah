@@ -4,6 +4,7 @@ import { useVisitsOptimized as useVisits } from "@/hooks/useVisitsOptimized";
 import { useClientsOptimized as useClients } from "@/hooks/useClientsOptimized";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { parseLocalDate } from "@/lib/dates";
 
 // Importa constantes centralizadas
 import { STATUS_STYLES, STATUS_LABELS } from "@/constants/visits";
@@ -21,12 +22,12 @@ export function UpcomingVisits() {
   // Filtra visitas futuras (a partir de hoje) que não foram canceladas
   const upcomingVisits = visits
     ?.filter(visit => {
-      const visitDate = new Date(visit.visit_date);
+      const visitDate = parseLocalDate(visit.visit_date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return visitDate >= today && visit.status !== 'cancelada';
     })
-    .sort((a, b) => new Date(a.visit_date).getTime() - new Date(b.visit_date).getTime())
+    .sort((a, b) => a.visit_date.localeCompare(b.visit_date))
     .slice(0, 5) || [];
 
   /**
@@ -73,7 +74,7 @@ export function UpcomingVisits() {
           </p>
         </div>
         <Button variant="gold" size="sm" asChild>
-          <Link to="/visitas">
+          <Link to="/crm">
             <Calendar className="h-4 w-4" />
             Agendar
           </Link>
@@ -103,7 +104,7 @@ export function UpcomingVisits() {
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(visit.visit_date).toLocaleDateString("pt-BR")}
+                        {parseLocalDate(visit.visit_date).toLocaleDateString("pt-BR")}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -127,7 +128,7 @@ export function UpcomingVisits() {
 
           {/* Link para Ver Todas */}
           <Button variant="ghost" className="w-full mt-4 text-muted-foreground" asChild>
-            <Link to="/visitas">Ver todas as visitas</Link>
+            <Link to="/crm">Ver todas as visitas</Link>
           </Button>
         </>
       ) : (

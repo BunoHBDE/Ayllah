@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { getSafeErrorMessage } from "@/lib/errorHandler";
+import { invalidateQueries } from "@/lib/queryClient";
 
 export interface BlockedDate {
   id: string;
@@ -88,6 +89,8 @@ export function useBlockedDates() {
     }
 
     await fetchBlockedDates();
+    // O calendário dos orçamentos lê os bloqueios de um cache próprio.
+    invalidateQueries.blockedDates();
     return true;
   };
 
@@ -121,6 +124,8 @@ export function useBlockedDates() {
     }
 
     await fetchBlockedDates();
+    // O calendário dos orçamentos lê os bloqueios de um cache próprio.
+    invalidateQueries.blockedDates();
     return true;
   };
 
@@ -138,6 +143,8 @@ export function useBlockedDates() {
     }
 
     await fetchBlockedDates();
+    // O calendário dos orçamentos lê os bloqueios de um cache próprio.
+    invalidateQueries.blockedDates();
     return true;
   };
 

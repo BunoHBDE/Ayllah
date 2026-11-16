@@ -42,7 +42,6 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-alert-dialog',
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-navigation-menu',
             '@radix-ui/react-popover',
             '@radix-ui/react-select',
             '@radix-ui/react-tabs',
@@ -50,9 +49,6 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-tooltip',
             '@radix-ui/react-slot',
           ],
-          
-          // Animações - pode ser carregado depois
-          'animations': ['framer-motion'],
           
           // Utilitários
           'utils': [
@@ -64,12 +60,6 @@ export default defineConfig(({ mode }) => ({
           
           // Supabase
           'supabase': ['@supabase/supabase-js'],
-          
-          // Fontes (carregam separadamente)
-          'fonts': [
-            '@fontsource/inter',
-            '@fontsource/playfair-display',
-          ],
         },
         
         // Nomes de arquivo com hash para cache busting

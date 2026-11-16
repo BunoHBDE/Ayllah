@@ -6,7 +6,7 @@ const actions = [
     icon: Calendar,
     label: "Agendar Visita",
     description: "Nova visita ao espaço",
-    path: "/visitas",
+    path: "/crm",
     color: "bg-primary/10 text-primary",
     disabled: false,
   },

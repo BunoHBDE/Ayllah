@@ -148,7 +148,16 @@ serve(async (req) => {
     const trialEnd = subscription.trial_end 
       ? new Date(subscription.trial_end * 1000).toISOString() 
       : null;
-    const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+    // A partir da API 2025-03-31 do Stripe o fim do período saiu da assinatura
+    // e passou para os itens. Ler só o campo antigo dava `undefined`, e o
+    // toISOString() de uma data inválida derrubava a função com erro 500 para
+    // todo assinante.
+    const periodEndTs =
+      subscription.items.data[0]?.current_period_end ??
+      (subscription as unknown as { current_period_end?: number }).current_period_end;
+    const currentPeriodEnd = periodEndTs
+      ? new Date(periodEndTs * 1000).toISOString()
+      : null;
     const priceId = subscription.items.data[0]?.price.id || null;
 
     logStep("Subscription found", { 

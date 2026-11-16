@@ -82,8 +82,9 @@ serve(async (req) => {
           user_id: user.id,
         },
       },
-      success_url: `${origin}/configuracoes?section=assinatura&success=true`,
-      cancel_url: `${origin}/configuracoes?section=assinatura&canceled=true`,
+      // O app abre a aba pela query `tab`.
+      success_url: `${origin}/configuracoes?tab=assinatura&success=true`,
+      cancel_url: `${origin}/configuracoes?tab=assinatura&canceled=true`,
       metadata: {
         user_id: user.id,
       },

@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
   const debug: any = {};
   try {
     let leadFilter: string[] | null = null;
-    try { const b = await req.json(); if (Array.isArray(b?.lead_ids)) leadFilter = b.lead_ids; } catch {}
+    try { const b = await req.json(); if (Array.isArray(b?.lead_ids)) leadFilter = b.lead_ids; } catch { /* sem corpo: é a chamada do cron */ }
 
     // Busca leads com mensagens. Se não houver filtro explícito, processa
     // apenas leads com mensagens novas desde a última sugestão (para o cron 3x/dia).

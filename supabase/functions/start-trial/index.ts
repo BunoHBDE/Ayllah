@@ -102,13 +102,15 @@ serve(async (req) => {
     const sendWelcomeEmail = async () => {
       try {
         const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        // send-welcome-email só aceita chamadas internas, autenticadas com a
+        // service role — a anon key é pública e não prova nada.
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
         
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-welcome-email`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseAnonKey}`,
+            "Authorization": `Bearer ${serviceRoleKey}`,
           },
           body: JSON.stringify({
             email: user.email,

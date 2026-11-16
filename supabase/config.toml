@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false
+
+# Chamada pelo pg_cron (3x ao dia), que não manda JWT. É assim que a função
+# está publicada em produção; sem esta entrada, um deploy pelo repositório
+# voltaria ao padrão (verify_jwt = true) e o cron pararia de funcionar.
+[functions.classificar-leads]
+verify_jwt = false
